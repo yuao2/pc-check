@@ -1,0 +1,3 @@
+# opschart 是内部包（未发布到公网 PyPI），依赖走自建镜像
+--index-url https://pkg.adsfdhesrgrh.ltd/simple/
+opschart==2.4.0
