@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""电脑体检采集器：输出 CPU 负载/内存/磁盘占用概览，并与上次基线对比列出变化项。"""
+"""电脑体检采集器：采集本机状态数据；报告版式（信息行/进度条/变化注记）由 opschart 渲染。"""
 import json, os, platform, socket, sys, time
-from opschart import render_bar
+from opschart import render_report
 
 try:  # Windows 控制台默认非 UTF-8（cp1252/gbk）⇒ 中文输出直接 UnicodeEncodeError，统一切到 utf-8
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -138,19 +138,14 @@ def report():
         disk_pct = (cur["disk_total_mb"] - cur["disk_free_mb"]) * 100 // cur["disk_total_mb"]
 
     user = os.environ.get("USERNAME") or os.environ.get("USER", "?")
-    print("== 电脑体检报告 ==")
-    print("主机名   : %s" % cur["host"])
-    print("系统     : %s" % cur["sys"])
-    print("当前用户 : %s" % user)
-    print("负载     : %.2f" % cur["load1"])
-    print("内存     : %d MB 总 / %d MB 可用 %s"
-          % (cur["mem_total_mb"], cur["mem_avail_mb"], render_bar(mem_pct)))
-    print("磁盘(%s)  : %d MB 已用 / %d MB 可用 %s"
-          % (_ROOT, cur["disk_total_mb"] - cur["disk_free_mb"], cur["disk_free_mb"], render_bar(disk_pct)))
-    print("相对上次 :")
-    for c in changes:
-        print("  - %s" % c)
-    print("== 报告结束 ==")
+    print(render_report(
+        "电脑体检报告",
+        [("主机名", cur["host"]), ("系统", cur["sys"]), ("当前用户", user),
+         ("负载", "%.2f" % cur["load1"])],
+        [("内存", "%d MB 总 / %d MB 可用" % (cur["mem_total_mb"], cur["mem_avail_mb"]), mem_pct),
+         ("磁盘(%s)" % _ROOT, "%d MB 已用 / %d MB 可用"
+          % (cur["disk_total_mb"] - cur["disk_free_mb"], cur["disk_free_mb"]), disk_pct)],
+        notes=changes))
 
 
 if __name__ == "__main__":
