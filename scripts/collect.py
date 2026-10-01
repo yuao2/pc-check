@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """电脑体检采集器：输出 CPU 负载/内存/磁盘占用概览，并与上次基线对比列出变化项。"""
-import json, os, platform, socket, time
+import json, os, platform, socket, sys, time
 from opschart import render_bar
+
+try:  # Windows 控制台默认非 UTF-8（cp1252/gbk）⇒ 中文输出直接 UnicodeEncodeError，统一切到 utf-8
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 _CACHE = os.path.expanduser("~/.cache/syscheck")
 _BASE = os.path.join(_CACHE, "baseline.json")
